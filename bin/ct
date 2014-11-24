@@ -10,22 +10,36 @@ def formatWithZone(zone)
   return "%Y-%m-%d %H:%M:%S #{zone.gsub(':','')}"
 end
 
+params = {}
+
 opt = OptionParser.new
 opt.version = CT::VERSION
+opt.on('-u', '--utc hour') {|v| params[:utc] = v}
+opt.parse!(ARGV)
+argv = ARGV
 
-argv = opt.parse!(ARGV)
-
-a = argv[0]
-
-if a.nil?
+if params.empty? and argv.length == 0
   puts Time.now
 else
-  localHour = a.downcase
-  now  = DateTime.now
-  time = DateTime.new(now.year, now.month, now.day, localHour.to_i, now.min, now.sec)
-  strTime = time.strftime(formatWithZone(now.zone))
-  localTime = DateTime.parse(strTime)
-  utcTime = localTime.new_offset(Rational(0, 24))
-  puts localTime.strftime(formatWithZone(localTime.zone))
-  puts utcTime.strftime(formatWithZone(utcTime.zone))
+  if params.empty? == false
+    if params[:utc].empty? == false
+      utc = params[:utc]
+      utcHour = utc
+      now  = DateTime.now
+      utcTime = DateTime.new(now.year, now.month, now.day, utcHour.to_i, now.min, now.sec)
+      localTime = utcTime.new_offset(Rational(now.zone.gsub(':00',''), 24))
+      puts utcTime.strftime(formatWithZone(utcTime.zone))
+      puts localTime.strftime(formatWithZone(localTime.zone))
+    end
+  end
+  if argv.length > 0
+    localHour = argv[0].downcase
+    now  = DateTime.now
+    time = DateTime.new(now.year, now.month, now.day, localHour.to_i, now.min, now.sec)
+    strTime = time.strftime(formatWithZone(now.zone))
+    localTime = DateTime.parse(strTime)
+    utcTime = localTime.new_offset(Rational(0, 24))
+    puts localTime.strftime(formatWithZone(localTime.zone))
+    puts utcTime.strftime(formatWithZone(utcTime.zone))
+  end
 end
