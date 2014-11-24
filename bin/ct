@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'version'
+require 'optparse'
+require 'date'
+
+def formatWithZone(zone)
+  return "%Y-%m-%d %H:%M:%S #{zone.gsub(':','')}"
+end
+
+opt = OptionParser.new
+opt.version = CT::VERSION
+
+argv = opt.parse!(ARGV)
+
+a = argv[0]
+
+if a.nil?
+  puts Time.now
+else
+  localHour = a.downcase
+  now  = DateTime.now
+  time = DateTime.new(now.year, now.month, now.day, localHour.to_i, now.min, now.sec)
+  strTime = time.strftime(formatWithZone(now.zone))
+  localTime = DateTime.parse(strTime)
+  utcTime = localTime.new_offset(Rational(0, 24))
+  puts localTime.strftime(formatWithZone(localTime.zone))
+  puts utcTime.strftime(formatWithZone(utcTime.zone))
+end
